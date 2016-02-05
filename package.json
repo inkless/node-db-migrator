@@ -1,0 +1,24 @@
+{
+  "name": "node-db-migrator",
+  "version": "0.1.0",
+  "description": "a node database migrator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:inkless/node-db-migrator.git"
+  },
+  "keywords": [
+    "node",
+    "database",
+    "migration"
+  ],
+  "author": "Guangda Zhang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/inkless/node-db-migrator/issues"
+  },
+  "homepage": "https://github.com/inkless/node-db-migrator"
+}
