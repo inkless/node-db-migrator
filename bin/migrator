@@ -1,0 +1,66 @@
+#!/usr/bin/env node
+var minimist = require('minimist');
+var path = require('path');
+var _ = require('lodash');
+var migratorCore = require('../core');
+
+var cwd = process.cwd();
+var argv = minimist(process.argv.slice(2));
+
+if (argv.help || argv.h) {
+  console.log(`Usage: migrator [up|down|create|daemon] [migrationName|all] [options]
+
+Options:
+
+  --env                       The environment to run the migrations under (dev, test, prod).
+
+  --migrations-dir            The directory containing your migration files.                    [default: "${path.join(cwd, 'migrations')}"]
+
+  --dry-run                   Prints the SQL but doesn't run it.
+
+  --version                   Print version info.
+
+  --config                    Location of the database.json file.                               [default: "${path.join(cwd, 'database.json')}"]
+
+  --sql-file                  Automatically create two sql files for up and down statements     [default: false]
+                              in /sqls and generate the javascript code that loads them.
+
+  --migration-changelog       Set the path of the migration table, which stores the             [default: "${path.join(cwd, 'db/migration_changelog')}"]
+                              migration history.`);
+  return;
+} else if (argv.version || argv.v) {
+  console.log('v'+migratorCore.version);
+  return;
+}
+
+var config = {};
+if (argv['migrations-dir']) {
+  config.migrationsDir = argv['migrations-dir'];
+}
+
+if (argv.config) {
+  config.dbConfig = argv.config;
+}
+
+migratorCore.configure(config);
+
+var command = argv._[0];
+var param = _.snakeCase(argv._[1]);
+switch(command) {
+  // create migration script
+  case 'create':
+    migratorCore.create(param);
+    break;
+  // run migration up
+  case 'up':
+    migratorCore.up(param);
+    break;
+  // run migration down
+  case 'down':
+    migratorCore.down(param);
+    break;
+  // start daemon and listen for migration triggers
+  case 'daemon':
+    migratorCore.daemon(param);
+    break;
+}
