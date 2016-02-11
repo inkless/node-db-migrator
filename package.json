@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/inkless/node-db-migrator",
   "dependencies": {
-    "db-migrate": "^0.9.23",
     "lodash": "^4.2.1",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
@@ -30,6 +29,7 @@
     "mongodb": "^2.1.7",
     "mysql": "^2.10.2",
     "promise": "^7.1.1",
-    "sqlite3": "^3.1.1"
+    "sqlite3": "^3.1.1",
+    "winston": "^2.1.1"
   }
 }

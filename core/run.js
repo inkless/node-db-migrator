@@ -1,8 +1,11 @@
 var fs = require('fs');
 var path = require('path');
+var _ = require('lodash');
 var Promise = require('promise');
 var getConfig = require('../config').getConfig;
-var dbConnect = require('./db_connect');
+var dbConnect = require('../libs/db_connect');
+var checkExists = require('../libs/utils').checkExists;
+var changelog = require('../libs/changelog');
 
 exports.up = function(script) {
   migrate(script, 'up');
@@ -17,7 +20,7 @@ function migrate(script, type) {
   var scriptWithPostfix = appendPostfix(script);
   var scriptsToRun;
   if (script) {
-    if (checkScriptExist(scriptWithPostfix, config)) {
+    if (checkExists(path.join(config.migrationsDir, scriptWithPostfix))) {
       scriptsToRun = [scriptWithPostfix];
     } else {
       console.error('No script found, please double check the script name.');
@@ -27,6 +30,11 @@ function migrate(script, type) {
     scriptsToRun = getAllScripts(config.migrationsDir, type);
   }
 
+  if (!scriptsToRun.length) {
+    console.log('No migrations needed.');
+    return;
+  }
+
   scriptsToRun
     .reduce(function(cur, next) {
       return cur.then(function() {
@@ -34,6 +42,7 @@ function migrate(script, type) {
       });
     }, Promise.resolve())
     .then(function() {
+      changelog.close();
       console.log('All migrations done.');
     });
 }
@@ -48,24 +57,43 @@ function runOneScript(script, type) {
   migrate.connect(dbConnect);
   return new Promise(function(resolve, reject) {
     migrate[type](dbConnect.getAllConnections(), function() {
-      // changelog
-      // TODO
-      console.log('Done...');
+      recordChange(script, type, config.migrationsDir);
       dbConnect.endAll().then(resolve);
-
     });
   });
 }
 
+function recordChange(script, type, migrationsDir) {
+  var name = _.trimEnd(script, '.js');
+  switch(type) {
+    case 'up':
+      changelog.addLog(name, migrationsDir);
+      break;
+    case 'down':
+      changelog.removeLog(name, migrationsDir);
+      break;
+  }
+}
+
 function getAllScripts(dir, type) {
   var files = fs.readdirSync(dir);
-  return files.sort(function(a, b) {
-    if (type === 'up') {
-      return a.split('_')[0] > b.split('_')[0];
-    } else {
-      return a.split('_')[0] < b.split('_')[0];
-    }
+  var allLogs = changelog.getAllLogsFromCache().map(function(log) {
+    return log.name;
   });
+
+  if (type === 'up') {
+    return files.sort(function(a, b) {
+      return a.split('_')[0] > b.split('_')[0];
+    }).filter(function(file) {
+      return !~allLogs.indexOf(_.trimEnd(file, '.js'));
+    });
+  } else {
+    return allLogs.filter(function(logName) {
+      return ~files.indexOf(logName + '.js');
+    }).sort(function(a, b) {
+      return a.split('_')[0] < b.split('_')[0];
+    });
+  }
 }
 
 function appendPostfix(name) {
@@ -73,13 +101,4 @@ function appendPostfix(name) {
     name += '.js';
   }
   return name;
-}
-
-function checkScriptExist(script, config) {
-  try {
-    fs.statSync(path.join(config.migrationsDir, script));
-  } catch(e) {
-    return false;
-  }
-  return true;
 }

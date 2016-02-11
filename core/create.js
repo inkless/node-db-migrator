@@ -1,6 +1,6 @@
 var fs = require('fs');
 var path = require('path');
-var mkdirp = require('mkdirp');
+var mkdirpSync = require('mkdirp').sync;
 var moment = require('moment');
 
 var getConfig = require('../config').getConfig;
@@ -15,10 +15,9 @@ module.exports = function(migrationName) {
 
 function createFile(name, dir, script) {
   var writeDest = path.join(dir, name);
-  mkdirp(dir, function() {
-    fs.writeFileSync(writeDest, script);
-    console.log('Migration script ' + name + ' created!');
-  });
+  mkdirpSync(dir);
+  fs.writeFileSync(writeDest, script);
+  console.log('Migration script ' + name + ' created!');
 }
 
 function generateFilename(name) {

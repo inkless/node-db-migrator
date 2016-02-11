@@ -4,6 +4,7 @@ var path = require('path');
 var _ = require('lodash');
 var migratorCore = require('../core');
 var defaultConfig = require('../config').defaultConfig;
+var changelog = require('../libs/changelog');
 
 var cwd = process.cwd();
 var argv = minimist(process.argv.slice(2));
@@ -13,11 +14,13 @@ if (argv.help || argv.h) {
   'Options:\n\n' +
   '  --version                   Print version info.\n\n' +
   '  --migrations-dir            The directory containing your migration files.                    [default: "' + defaultConfig.migrationsDir + '"]\n\n' +
-  '  --migrations-changelog      Set the path of the migration table, which stores the             [default: "' + defaultConfig.migrationsChangelog + '"]\n                              migration history.\n\n' +
+  '  --migrations-changelog      Set the path of the migration table, which stores the             [default: "' + defaultConfig.migrationsChangelog + '"]\n' +
+  '                              migration history.\n\n' +
   '  --db-config                 Location of the database.json file.                               [default: "' + defaultConfig.dbConfig + '"]\n\n' +
   '  --db-in-use                 Database might in use (mysql,mongo).                              [default: "' + defaultConfig.dbInUse + '"]\n\n' +
   '  --env                       The environment to run the migrations under (dev, test, prod).\n\n' +
-  '  --sql-file                  Automatically create two sql files for up and down statements     [default: false | To be implemented]\n                              in /sqls and generate the javascript code that loads them.\n\n' +
+  '  --sql-file                  Automatically create two sql files for up and down statements     [default: false | To be implemented]\n' +
+  '                              in /sqls and generate the javascript code that loads them.\n\n' +
   '  --dry-run                   Prints the SQL but doesn\'t run it.                                [default: false | To be implemented]\n'));
   return;
 } else if (argv.version || argv.v) {
@@ -34,13 +37,12 @@ switch(command) {
   case 'create':
     migratorCore.create(param);
     break;
-  // run migration up
+  // run migration up/down
   case 'up':
-    migratorCore.up(param);
-    break;
-  // run migration down
   case 'down':
-    migratorCore.down(param);
+    changelog.init(function() {
+      migratorCore[command](param);
+    });
     break;
   // start daemon and listen for migration triggers
   case 'daemon':

@@ -23,8 +23,6 @@ exports.up = function(db, callback) {
             return '("' + row.sad_story + '")';
           }).join(',') + ';';
 
-        console.log(sqls);
-
         db.mysql2.query(sqls, callback);
       });
     }
