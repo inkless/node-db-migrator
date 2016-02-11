@@ -1,0 +1,26 @@
+{
+  "defaultDb": "mysql",
+
+  "mysql": {
+    "driver": "mysql",
+    "user": "root",
+    "password": "passw0rd",
+		"database": "node_db_migration",
+    "host": "localhost"
+  },
+
+  "mongo": {
+    "driver": "mongodb",
+    "database": "node_db_migration",
+    "host": "localhost"
+  },
+
+  "mysql2": {
+    "driver": "mysql",
+    "user": "root",
+    "password": "passw0rd",
+		"database": "node_db_migration_2",
+    "host": "localhost"
+  }
+
+}

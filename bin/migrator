@@ -3,46 +3,29 @@ var minimist = require('minimist');
 var path = require('path');
 var _ = require('lodash');
 var migratorCore = require('../core');
+var defaultConfig = require('../config').defaultConfig;
 
 var cwd = process.cwd();
 var argv = minimist(process.argv.slice(2));
 
 if (argv.help || argv.h) {
-  console.log(`Usage: migrator [up|down|create|daemon] [migrationName|all] [options]
-
-Options:
-
-  --env                       The environment to run the migrations under (dev, test, prod).
-
-  --migrations-dir            The directory containing your migration files.                    [default: "${path.join(cwd, 'migrations')}"]
-
-  --dry-run                   Prints the SQL but doesn't run it.
-
-  --version                   Print version info.
-
-  --config                    Location of the database.json file.                               [default: "${path.join(cwd, 'database.json')}"]
-
-  --sql-file                  Automatically create two sql files for up and down statements     [default: false]
-                              in /sqls and generate the javascript code that loads them.
-
-  --migration-changelog       Set the path of the migration table, which stores the             [default: "${path.join(cwd, 'db/migration_changelog')}"]
-                              migration history.`);
+  console.log(('Usage: migrator [up|down|create|daemon] [migrationName|all] [options]\n\n' +
+  'Options:\n\n' +
+  '  --version                   Print version info.\n\n' +
+  '  --migrations-dir            The directory containing your migration files.                    [default: "' + defaultConfig.migrationsDir + '"]\n\n' +
+  '  --migrations-changelog      Set the path of the migration table, which stores the             [default: "' + defaultConfig.migrationsChangelog + '"]\n                              migration history.\n\n' +
+  '  --db-config                 Location of the database.json file.                               [default: "' + defaultConfig.dbConfig + '"]\n\n' +
+  '  --db-in-use                 Database might in use (mysql,mongo).                              [default: "' + defaultConfig.dbInUse + '"]\n\n' +
+  '  --env                       The environment to run the migrations under (dev, test, prod).\n\n' +
+  '  --sql-file                  Automatically create two sql files for up and down statements     [default: false | To be implemented]\n                              in /sqls and generate the javascript code that loads them.\n\n' +
+  '  --dry-run                   Prints the SQL but doesn\'t run it.                                [default: false | To be implemented]\n'));
   return;
 } else if (argv.version || argv.v) {
   console.log('v'+migratorCore.version);
   return;
 }
 
-var config = {};
-if (argv['migrations-dir']) {
-  config.migrationsDir = argv['migrations-dir'];
-}
-
-if (argv.config) {
-  config.dbConfig = argv.config;
-}
-
-migratorCore.configure(config);
+migratorCore.configure(retrieveConfig(argv));
 
 var command = argv._[0];
 var param = _.snakeCase(argv._[1]);
@@ -63,4 +46,24 @@ switch(command) {
   case 'daemon':
     migratorCore.daemon(param);
     break;
+}
+
+function retrieveConfig(argv) {
+  var config = {};
+  ['migrations-dir', 'migrations-changelog', 'db-config'].forEach(function(conf) {
+    if (!argv[conf]) {
+      return;
+    }
+
+    config[_.camelCase(conf)] =
+      path.isAbsolute(argv[conf]) ?
+        argv[conf] :
+        path.join(cwd, argv[conf]);
+  });
+
+  if (argv['db-in-use']) {
+    config.dbInUse = argv['db-in-use'].split(',');
+  }
+
+  return config;
 }

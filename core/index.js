@@ -1,12 +1,8 @@
-var migratorCore = {
-  version: require('../package.json').version
+module.exports = {
+  version: require('../package.json').version,
+  configure: require('../config').configure,
+  create: require('./create'),
+  up: require('./run').up,
+  down: require('./run').down,
+  daemon: require('./daemon')
 };
-
-migratorCore.configure = function() {
-
-};
-
-migratorCore.create = require('./create');
-
-
-module.exports = migratorCore;
