@@ -13,23 +13,30 @@ var config = _.clone(defaultConfig);
 exports.configure = function(newConfig) {
   _.extend(config, newConfig);
   verifyConfig(config);
-  config.databases = require(config.dbConfig);
 
+  var databases = getDatabases();
   if (!config.dbInUse) {
-    if (config.databases.defaultDb) {
-      config.dbInUse = [config.databases.defaultDb];
-    } else if (_.size(config.databases) === 1) {
-      for (var dbName in config.databases) {
+    if (databases.defaultDb) {
+      config.dbInUse = [databases.defaultDb];
+    } else if (_.size(databases) === 1) {
+      for (var dbName in databases) {
         config.dbInUse = [dbName];
       }
     } else {
-      config.dbInUse = _.keys(config.databases);
+      config.dbInUse = _.keys(databases);
     }
   }
 };
 
 exports.getConfig = function() {
   return config;
+};
+
+var getDatabases = exports.getDatabases = function() {
+  if (!config.databases) {
+    config.databases = require(config.dbConfig);
+  }
+  return config.databases;
 };
 
 function verifyConfig(config) {

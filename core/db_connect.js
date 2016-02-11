@@ -1,6 +1,9 @@
 var mysql = require('mysql');
 var mongodb = require('mongodb');
+var _ = require('lodash');
+var Promise = require('promise');
 var getConfig = require('../config').getConfig;
+var getDatabases = require('../config').getDatabases;
 
 var connections = {};
 
@@ -18,20 +21,33 @@ exports.connect = function(dbName) {
       // TODO
       break;
   }
+
+  var ori = _.size(connections);
   connections[dbName] = connection;
   return connection;
 };
 
-exports.end = function(dbName) {
+var end = exports.end = function(dbName) {
   var targetDb = getTargetDb(dbName);
-  switch (driver) {
-    case 'mysql':
-      connections[dbName].end();
-      break;
-    case 'mongodb':
-      // TODO
-      break;
-  }
+  return new Promise(function(resolve, reject) {
+    switch (targetDb.driver) {
+      case 'mysql':
+        connections[dbName].end(function(err) {
+          delete connections[dbName];
+          resolve();
+        });
+        break;
+      case 'mongodb':
+        // TODO
+        break;
+    }
+  });
+};
+
+exports.endAll = function() {
+  return Promise.all(_(connections).keys().map(function(dbName) {
+    return end(dbName);
+  }).value());
 };
 
 exports.getAllConnections = function() {
@@ -39,8 +55,7 @@ exports.getAllConnections = function() {
 };
 
 function getTargetDb(dbName) {
-  var databases = getConfig().databases;
-  return databases[dbName];
+  return getDatabases()[dbName];
 }
 
 function connectMysql(config) {

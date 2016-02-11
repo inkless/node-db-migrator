@@ -9,12 +9,12 @@ exports.connect = function(dbConnect) {
  * Add your up migrations code here
  */
 exports.up = function(db, callback) {
-  callback();
+  db.mysql.query('ALTER TABLE employee ADD COLUMN `sad_story` TEXT;', callback);
 };
 
 /**
  * Add your down migrations code here
  */
 exports.down = function(db, callback) {
-  callback();
+  db.mysql.query('ALTER TABLE employee DROP COLUMN `sad_story`;', callback);
 };

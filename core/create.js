@@ -22,7 +22,7 @@ function createFile(name, dir, script) {
 }
 
 function generateFilename(name) {
-  return moment().format('YYYYMMDDHHmmssSSS') + '_' +name + '.js';
+  return moment().format('YYYYMMDDHHmmss') + '_' +name + '.js';
 }
 
 function generateScript(dbNames) {

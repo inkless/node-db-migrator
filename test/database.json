@@ -6,7 +6,8 @@
     "user": "root",
     "password": "passw0rd",
 		"database": "node_db_migration",
-    "host": "localhost"
+    "host": "localhost",
+    "multipleStatements": true
   },
 
   "mongo": {
@@ -20,7 +21,8 @@
     "user": "root",
     "password": "passw0rd",
 		"database": "node_db_migration_2",
-    "host": "localhost"
+    "host": "localhost",
+    "multipleStatements": true
   }
 
 }
