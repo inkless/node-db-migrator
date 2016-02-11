@@ -3,6 +3,7 @@ var minimist = require('minimist');
 var path = require('path');
 var _ = require('lodash');
 var migratorCore = require('../core');
+var configure = require('../config').configure;
 var defaultConfig = require('../config').defaultConfig;
 var changelog = require('../libs/changelog');
 
@@ -10,32 +11,45 @@ var cwd = process.cwd();
 var argv = minimist(process.argv.slice(2));
 
 if (argv.help || argv.h) {
-  console.log(('Usage: migrator [up|down|create|daemon] [migrationName|all] [options]\n\n' +
-  'Options:\n\n' +
-  '  --version                   Print version info.\n\n' +
-  '  --migrations-dir            The directory containing your migration files.                    [default: "' + defaultConfig.migrationsDir + '"]\n\n' +
-  '  --migrations-changelog      Set the path of the migration table, which stores the             [default: "' + defaultConfig.migrationsChangelog + '"]\n' +
-  '                              migration history.\n\n' +
-  '  --db-config                 Location of the database.json file.                               [default: "' + defaultConfig.dbConfig + '"]\n\n' +
-  '  --db-in-use                 Database might in use (mysql,mongo).                              [default: "' + defaultConfig.dbInUse + '"]\n\n' +
-  '  --env                       The environment to run the migrations under (dev, test, prod).\n\n' +
-  '  --sql-file                  Automatically create two sql files for up and down statements     [default: false | To be implemented]\n' +
-  '                              in /sqls and generate the javascript code that loads them.\n\n' +
-  '  --dry-run                   Prints the SQL but doesn\'t run it.                                [default: false | To be implemented]\n'));
+  console.log(('Usage: migrator [Command] [migrationName] [options]\n' +
+  'Command:\n' +
+  '  up                          Run a up migration.\n' +
+  '  down                        Run a down migration.\n' +
+  '  create                      Create a migration script.\n' +
+  '  trigger                     Create a trigger script.\n' +
+  '  daemon                      Spin up a daemon to listen for triggering,\n' +
+  '                              it will execute corresponding trigger script.\n' +
+  'Options:\n' +
+  '  -v, --version               Print version info.\n' +
+  '  -d, --migrations-dir        The directory containing your migration files.\n' +
+  '                              [default: "' + defaultConfig.migrationsDir + '"]\n' +
+  '  -l, --migrations-changelog  Set the path of the migration table, which stores the\n' +
+  '                              migration history.\n' +
+  '                              [default: "' + defaultConfig.migrationsChangelog + '"]\n' +
+  '  -c, --db-config             Location of the database.json file.\n' +
+  '                              [default: "' + defaultConfig.dbConfig + '"]\n' +
+  '  -u, --db-in-use             Database might in use (mysql,mongo).\n' +
+  '                              [default: "' + defaultConfig.dbInUse + '"]\n' +
+  '  --env                       The environment to run the migrations under (dev, test, prod).\n' +
+  '  --sql-file                  Automatically create two sql files for up and down statements\n' +
+  '                              in /sqls and generate the javascript code that loads them.\n' +
+  '                              [default: false | To be implemented]\n' +
+  '  --dry-run                   Prints the SQL but doesn\'t run it.\n' +
+  '                              [default: false | To be implemented]\n'));
   return;
 } else if (argv.version || argv.v) {
-  console.log('v'+migratorCore.version);
+  console.log('v'+require('../package.json').version);
   return;
 }
 
-migratorCore.configure(retrieveConfig(argv));
+configure(retrieveConfig(argv));
 
 var command = argv._[0];
 var param = _.snakeCase(argv._[1]);
 switch(command) {
   // create migration script
   case 'create':
-    migratorCore.create(param);
+    migratorCore.create(param, argv.trigger);
     break;
   // run migration up/down
   case 'up':
@@ -51,6 +65,22 @@ switch(command) {
 }
 
 function retrieveConfig(argv) {
+  if (!argv['migrations-dir']) {
+    argv['migrations-dir'] = argv.d;
+  }
+
+  if (!argv['migrations-changelog']) {
+    argv['migrations-changelog'] = argv.l;
+  }
+
+  if (!argv['db-config']) {
+    argv['db-config'] = argv.c;
+  }
+
+  if (!argv['db-in-use']) {
+    argv['db-in-use'] = argv.u;
+  }
+
   var config = {};
   ['migrations-dir', 'migrations-changelog', 'db-config'].forEach(function(conf) {
     if (!argv[conf]) {

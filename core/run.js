@@ -76,7 +76,9 @@ function recordChange(script, type, migrationsDir) {
 }
 
 function getAllScripts(dir, type) {
-  var files = fs.readdirSync(dir);
+  var files = fs.readdirSync(dir).filter(function(name) {
+    return name.substr(-3, 3) === '.js';
+  });
   var allLogs = changelog.getAllLogsFromCache().map(function(log) {
     return log.name;
   });
