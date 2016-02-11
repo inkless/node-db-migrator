@@ -1,8 +1,15 @@
-var dbm = global.dbm || require('db-migrate');
-var type = dbm.dataType;
+/**
+ * Connect to database
+ */
+exports.connect = function(dbConnect) {
+  dbConnect.connect("mysql");
+};
 
+/**
+ * Add your up migrations code here
+ */
 exports.up = function(db, callback) {
-  db.runSql('select id,info from employee', [], function(err, result) {
+  db.mysql.query('SELECT id,info FROM employee', [], function(err, rows) {
 
     if (err) {
       callback(err);
@@ -11,7 +18,7 @@ exports.up = function(db, callback) {
 
     var ids = [];
     var newData = [];
-    result.forEach(function(row) {
+    rows.forEach(function(row) {
       var info = row.info;
       info = JSON.parse(info);
 
@@ -26,13 +33,16 @@ exports.up = function(db, callback) {
       if (index === ids.length - 1) {
         cb = callback;
       }
-      db.runSql('update employee set info = ? where id = ?', [newData[index], id], cb);
+      db.mysql.query('UPDATE employee SET info = ? WHERE id = ?', [newData[index], id], cb);
     });
   });
 };
 
+/**
+ * Add your down migrations code here
+ */
 exports.down = function(db, callback) {
-  db.runSql('select id,info from employee', [], function(err, result) {
+  db.mysql.query('SELECT id,info FROM employee', [], function(err, rows) {
 
     if (err) {
       callback(err);
@@ -41,7 +51,7 @@ exports.down = function(db, callback) {
 
     var ids = [];
     var newData = [];
-    result.forEach(function(row) {
+    rows.forEach(function(row) {
       var info = row.info;
       info = JSON.parse(info);
 
@@ -56,7 +66,7 @@ exports.down = function(db, callback) {
       if (index === ids.length - 1) {
         cb = callback;
       }
-      db.runSql('update employee set info = ? where id = ?', [newData[index], id], cb);
+      db.mysql.query('UPDATE employee SET info = ? WHERE id = ?', [newData[index], id], cb);
     });
   });
 };
