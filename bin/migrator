@@ -4,8 +4,9 @@ var path = require('path');
 var _ = require('lodash');
 var migratorCore = require('../core');
 var configure = require('../config').configure;
-var defaultConfig = require('../config').defaultConfig;
+var getConfig = require('../config').getConfig;
 var changelog = require('../libs/changelog');
+var token = require('../libs/token');
 var CONSTANT = require('../constant');
 
 var cwd = process.cwd();
@@ -23,14 +24,16 @@ if (argv.help || argv.h) {
   'Options:\n' +
   '  -v, --version               Print version info.\n' +
   '  -m, --migrations-dir        The directory containing your migration files.\n' +
-  '                              [default: "' + defaultConfig.migrationsDir + '"]\n' +
+  '                              [default: "' + CONSTANT.DEFAULT_MIGRATIONS_DIR + '"]\n' +
   '  -d, --migrations-database   Set the path of the migration table, which stores the\n' +
   '                              migration history.\n' +
-  '                              [default: "' + defaultConfig.migrationsDatabase + '"]\n' +
+  '                              [default: "' + CONSTANT.DEFAULT_MIGRATIONS_DATABASE + '"]\n' +
   '  -c, --db-config             Location of the database.json file.\n' +
-  '                              [default: "' + defaultConfig.dbConfig + '"]\n' +
+  '                              [default: "' + CONSTANT.DEFAULT_DB_CONFIG + '"]\n' +
   '  -u, --db-in-use             Database might in use (mysql,mongo).\n' +
-  '                              [default: "' + defaultConfig.dbInUse + '"]\n' +
+  '                              [default: "' + getConfig().dbInUse + '"]\n' +
+  '  -p, --port                  Port number when running daemon.' +
+  '                              [default: "' + CONSTANT.DEFAULT_PORT + '"]\n' +
   '  --env                       The environment to run the migrations under (dev, test, prod).\n' +
   '  --sql-file                  Automatically create two sql files for up and down statements\n' +
   '                              in /sqls and generate the javascript code that loads them.\n' +
@@ -61,30 +64,20 @@ switch(command) {
     break;
   // create trigger script
   case 'trigger':
-    migratorCore.create(param, CONSTANT.TRIGGER_TEMPLATE_PATH, CONSTANT.TRIGGER_FOLDER_NAME);
+    token.init(function() {
+      migratorCore.create(param, CONSTANT.TRIGGER_TEMPLATE_PATH, CONSTANT.TRIGGER_FOLDER_NAME, 'trigger');
+    });
     break;
   // start daemon and listen for migration triggers
   case 'daemon':
-    migratorCore.daemon(param);
+    token.init(function() {
+      migratorCore.daemon(param);
+    });
     break;
 }
 
 function retrieveConfig(argv) {
-  if (!argv['migrations-dir']) {
-    argv['migrations-dir'] = argv.m;
-  }
-
-  if (!argv['migrations-database']) {
-    argv['migrations-database'] = argv.d;
-  }
-
-  if (!argv['db-config']) {
-    argv['db-config'] = argv.c;
-  }
-
-  if (!argv['db-in-use']) {
-    argv['db-in-use'] = argv.u;
-  }
+  argv = retrieveShortArg(argv);
 
   var config = {};
   ['migrations-dir', 'migrations-database', 'db-config'].forEach(function(conf) {
@@ -102,5 +95,26 @@ function retrieveConfig(argv) {
     config.dbInUse = argv['db-in-use'].split(',');
   }
 
+  if (argv.port) {
+    config.port = parseInt(argv.port);
+  }
+
   return config;
+}
+
+function retrieveShortArg(argv) {
+  var shortMap = {
+    'migrations-dir': 'm',
+    'migrations-database': 'd',
+    'db-config': 'c',
+    'db-in-use': 'u',
+    'port': 'p'
+  };
+
+  for (var cmd in shortMap) {
+    if (!argv[cmd]) {
+      argv[cmd] = argv[shortMap[cmd]];
+    }
+  }
+  return argv;
 }

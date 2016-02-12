@@ -12,7 +12,7 @@ exports.init = function(callback) {
 };
 
 exports.createToken = function(name, callback) {
-  db.run('INSERT INTO ' + TOKEN_TABLE_NAME + ' VALUES(?, ?, datetime("now", "+1 month"))', [name, randomstring()], callback);
+  db.run('INSERT INTO ' + TOKEN_TABLE_NAME + ' VALUES(?, ?, datetime("now", "+1 month"))', [name, randomstring.generate()], callback);
 };
 
 exports.removeToken = function(name, callback) {

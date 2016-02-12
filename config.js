@@ -2,14 +2,15 @@ var path = require('path');
 var fs = require('fs');
 var _ = require('lodash');
 var checkExists = require('./libs/utils').checkExists;
+var CONSTANT = require('./constant');
 
 var cwd = process.cwd();
-var defaultConfig = exports.defaultConfig = {
-  migrationsDir: path.join(cwd, 'migrations'),
-  migrationsDatabase: path.join(cwd, 'db'),
-  dbConfig: path.join(cwd, 'database.json')
+var config = {
+  migrationsDir: CONSTANT.DEFAULT_MIGRATIONS_DIR,
+  migrationsDatabase: CONSTANT.DEFAULT_MIGRATIONS_DATABASE,
+  dbConfig: CONSTANT.DEFAULT_DB_CONFIG,
+  port: CONSTANT.DEFAULT_PORT
 };
-var config = _.clone(defaultConfig);
 
 exports.configure = function(newConfig) {
   _.extend(config, newConfig);

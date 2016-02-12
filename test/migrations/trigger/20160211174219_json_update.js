@@ -9,7 +9,7 @@ exports.connect = function(dbConnect) {
  * Add your migrations triggering code here
  */
 exports.trigger = function(db, params, callback) {
-  var firstName = params.firstName;
+  var firstName = params.first_name;
   db.mysql.query('SELECT id,info FROM employee WHERE first_name = ?', [firstName], function(err, rows) {
     var ids = [];
     var newData = [];
