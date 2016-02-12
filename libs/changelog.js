@@ -1,4 +1,4 @@
-var getConfig = require('../config').getConfig;
+var config = require('../config');
 var sqltDb = require('./sqlt_db');
 var CHANGELOG_TABLE_NAME = require('../constant').CHANGELOG_TABLE_NAME;
 
@@ -10,7 +10,7 @@ exports.init = function(callback) {
   sqltDb.init(function(database) {
     db = database;
 
-    getAllLogs(getConfig().migrationsDir, function(err, rows) {
+    getAllLogs(config.migrationsDir, function(err, rows) {
       allLogs = rows;
       callback();
     });

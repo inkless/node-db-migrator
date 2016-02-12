@@ -2,12 +2,11 @@ var fs = require('fs');
 var path = require('path');
 var mkdirpSync = require('mkdirp').sync;
 
-var getConfig = require('../config').getConfig;
+var config = require('../config');
 var utils = require('../libs/utils');
 var token = require('../libs/token');
 
 module.exports = function(migrationName, templatePath, folder, type) {
-  var config = getConfig();
   var filename = utils.generateFilename(migrationName);
   utils.createFile(
     filename,

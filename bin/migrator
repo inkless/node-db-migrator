@@ -1,27 +1,22 @@
 #!/usr/bin/env node
-var minimist = require('minimist');
-var path = require('path');
-var _ = require('lodash');
 var migratorCore = require('../core');
-var configure = require('../config').configure;
-var getConfig = require('../config').getConfig;
 var changelog = require('../libs/changelog');
 var token = require('../libs/token');
 var CONSTANT = require('../constant');
+var config = require('../config');
 
-var cwd = process.cwd();
-var argv = minimist(process.argv.slice(2));
-
-if (argv.help || argv.h) {
-  console.log(('Usage: migrator [Command] [migrationName] [options]\n' +
-  'Command:\n' +
+if (config.argv.help) {
+  console.log(('Usage: migrator [command] [migration-name] [options]\n\n' +
+  'command:\n' +
   '  up                          Run a up migration.\n' +
   '  down                        Run a down migration.\n' +
   '  create                      Create a migration script.\n' +
   '  trigger                     Create a trigger script.\n' +
   '  daemon                      Spin up a daemon to listen for triggering,\n' +
   '                              it will execute corresponding trigger script.\n' +
-  'Options:\n' +
+  '                              It\'s strongly recommended to use forever to run it.\n' +
+  '                              [Example] forever start migrate daemon\n' +
+  'options:\n' +
   '  -v, --version               Print version info.\n' +
   '  -m, --migrations-dir        The directory containing your migration files.\n' +
   '                              [default: "' + CONSTANT.DEFAULT_MIGRATIONS_DIR + '"]\n' +
@@ -31,25 +26,22 @@ if (argv.help || argv.h) {
   '  -c, --db-config             Location of the database.json file.\n' +
   '                              [default: "' + CONSTANT.DEFAULT_DB_CONFIG + '"]\n' +
   '  -u, --db-in-use             Database might in use (mysql,mongo).\n' +
-  '                              [default: "' + getConfig().dbInUse + '"]\n' +
-  '  -p, --port                  Port number when running daemon.' +
+  '                              [default: "' + config.dbInUse + '"]\n' +
+  '  -p, --port                  Port number when running daemon.\n' +
   '                              [default: "' + CONSTANT.DEFAULT_PORT + '"]\n' +
-  '  --env                       The environment to run the migrations under (dev, test, prod).\n' +
   '  --sql-file                  Automatically create two sql files for up and down statements\n' +
   '                              in /sqls and generate the javascript code that loads them.\n' +
   '                              [default: false | To be implemented]\n' +
   '  --dry-run                   Prints the SQL but doesn\'t run it.\n' +
   '                              [default: false | To be implemented]\n'));
   return;
-} else if (argv.version || argv.v) {
+} else if (config.argv.version) {
   console.log('v'+require('../package.json').version);
   return;
 }
 
-configure(retrieveConfig(argv));
-
-var command = argv._[0];
-var param = _.snakeCase(argv._[1]);
+var command = config.argv.command;
+var param = config.argv.param;
 switch(command) {
   // create migration script
   case 'create':
@@ -74,47 +66,4 @@ switch(command) {
       migratorCore.daemon(param);
     });
     break;
-}
-
-function retrieveConfig(argv) {
-  argv = retrieveShortArg(argv);
-
-  var config = {};
-  ['migrations-dir', 'migrations-database', 'db-config'].forEach(function(conf) {
-    if (!argv[conf]) {
-      return;
-    }
-
-    config[_.camelCase(conf)] =
-      path.isAbsolute(argv[conf]) ?
-        argv[conf] :
-        path.join(cwd, argv[conf]);
-  });
-
-  if (argv['db-in-use']) {
-    config.dbInUse = argv['db-in-use'].split(',');
-  }
-
-  if (argv.port) {
-    config.port = parseInt(argv.port);
-  }
-
-  return config;
-}
-
-function retrieveShortArg(argv) {
-  var shortMap = {
-    'migrations-dir': 'm',
-    'migrations-database': 'd',
-    'db-config': 'c',
-    'db-in-use': 'u',
-    'port': 'p'
-  };
-
-  for (var cmd in shortMap) {
-    if (!argv[cmd]) {
-      argv[cmd] = argv[shortMap[cmd]];
-    }
-  }
-  return argv;
 }

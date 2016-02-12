@@ -2,8 +2,7 @@ var mysql = require('mysql');
 var mongodb = require('mongodb');
 var _ = require('lodash');
 var Promise = require('promise');
-var getConfig = require('../config').getConfig;
-var getDatabases = require('../config').getDatabases;
+var config = require('../config');
 
 var connections = {};
 
@@ -55,7 +54,7 @@ exports.getAllConnections = function() {
 };
 
 function getTargetDb(dbName) {
-  return getDatabases()[dbName];
+  return config.databases[dbName];
 }
 
 function connectMysql(config) {

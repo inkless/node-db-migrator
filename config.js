@@ -1,3 +1,4 @@
+var minimist = require('minimist');
 var path = require('path');
 var fs = require('fs');
 var _ = require('lodash');
@@ -5,6 +6,8 @@ var checkExists = require('./libs/utils').checkExists;
 var CONSTANT = require('./constant');
 
 var cwd = process.cwd();
+var argv = minimist(process.argv.slice(2));
+
 var config = {
   migrationsDir: CONSTANT.DEFAULT_MIGRATIONS_DIR,
   migrationsDatabase: CONSTANT.DEFAULT_MIGRATIONS_DATABASE,
@@ -12,34 +15,75 @@ var config = {
   port: CONSTANT.DEFAULT_PORT
 };
 
-exports.configure = function(newConfig) {
+configure(retrieveConfig(argv));
+
+function configure(newConfig) {
   _.extend(config, newConfig);
   if (!checkExists(config.dbConfig)) {
     console.error('Cannot access to the database config!\nPlease verify your --db-config...');
     process.exit(1);
   }
 
-  var databases = getDatabases();
+  config.databases = require(config.dbConfig);
   if (!config.dbInUse) {
-    if (databases.defaultDb) {
-      config.dbInUse = [databases.defaultDb];
-    } else if (_.size(databases) === 1) {
-      for (var dbName in databases) {
+    if (config.databases.defaultDb) {
+      config.dbInUse = [config.databases.defaultDb];
+    } else if (_.size(config.databases) === 1) {
+      for (var dbName in config.databases) {
         config.dbInUse = [dbName];
       }
     } else {
-      config.dbInUse = _.keys(databases);
+      config.dbInUse = _.keys(config.databases);
     }
   }
 };
 
-exports.getConfig = function() {
-  return config;
-};
+function retrieveConfig(argv) {
+  argv = retrieveShortArg(argv);
+  var config = {};
+  ['migrations-dir', 'migrations-database', 'db-config'].forEach(function(conf) {
+    if (!argv[conf]) {
+      return;
+    }
 
-var getDatabases = exports.getDatabases = function() {
-  if (!config.databases) {
-    config.databases = require(config.dbConfig);
+    config[_.camelCase(conf)] =
+      path.isAbsolute(argv[conf]) ?
+        argv[conf] :
+        path.join(cwd, argv[conf]);
+  });
+
+  if (argv['db-in-use']) {
+    config.dbInUse = argv['db-in-use'].split(',');
   }
-  return config.databases;
-};
+
+  if (argv.port) {
+    config.port = parseInt(argv.port);
+  }
+
+  argv.command = argv._[0];
+  argv.param = _.snakeCase(argv._[1]);
+
+  config.argv = argv;
+  return config;
+}
+
+function retrieveShortArg(argv) {
+  var shortMap = {
+    'migrations-dir': 'm',
+    'migrations-database': 'd',
+    'db-config': 'c',
+    'db-in-use': 'u',
+    'port': 'p',
+    'help': 'h',
+    'version': 'v'
+  };
+
+  for (var cmd in shortMap) {
+    if (!argv[cmd]) {
+      argv[cmd] = argv[shortMap[cmd]];
+    }
+  }
+  return argv;
+}
+
+module.exports = config;

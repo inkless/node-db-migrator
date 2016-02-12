@@ -4,7 +4,7 @@ var path = require('path');
 var mkdirpSync = require('mkdirp').sync;
 var sqlite3 = require('sqlite3');
 var checkExists = require('./utils').checkExists;
-var getConfig = require('../config').getConfig;
+var config = require('../config');
 
 var SQLITE_DB_NAME = require('../constant').SQLITE_DB_NAME;
 var CHANGELOG_TABLE_NAME = require('../constant').CHANGELOG_TABLE_NAME;
@@ -32,7 +32,6 @@ exports.init = function(callback) {
     return;
   };
 
-  var config = getConfig();
   var dir = config.migrationsDatabase;
   var dbPath = path.join(dir, SQLITE_DB_NAME);
   if (!checkExists(dbPath)) {

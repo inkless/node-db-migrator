@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('lodash');
 var Promise = require('promise');
-var getConfig = require('../config').getConfig;
+var config = require('../config');
 var dbConnect = require('../libs/db_connect');
 var checkExists = require('../libs/utils').checkExists;
 var changelog = require('../libs/changelog');
@@ -20,7 +20,6 @@ exports.trigger = function(script, params) {
 };
 
 function migrate(script, type, params) {
-  var config = getConfig();
   var scriptWithPostfix = appendPostfix(script);
   var isTriggerMigration = type === 'trigger';
   var dir = isTriggerMigration ? path.join(config.migrationsDir, 'trigger') : config.migrationsDir;
@@ -56,7 +55,6 @@ function migrate(script, type, params) {
 }
 
 function runOneScript(script, dir, type, params) {
-  var config = getConfig();
   var scriptPath = path.join(dir, script);
   var migrate = require(scriptPath);
 
