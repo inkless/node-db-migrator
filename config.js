@@ -6,7 +6,7 @@ var checkExists = require('./libs/utils').checkExists;
 var cwd = process.cwd();
 var defaultConfig = exports.defaultConfig = {
   migrationsDir: path.join(cwd, 'migrations'),
-  migrationsChangelog: path.join(cwd, 'db'),
+  migrationsDatabase: path.join(cwd, 'db'),
   dbConfig: path.join(cwd, 'database.json')
 };
 var config = _.clone(defaultConfig);

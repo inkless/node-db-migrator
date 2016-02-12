@@ -15,19 +15,25 @@ exports.down = function(script) {
   migrate(script, 'down');
 };
 
-function migrate(script, type) {
+exports.trigger = function(script, params) {
+  migrate(script, 'trigger', params);
+};
+
+function migrate(script, type, params) {
   var config = getConfig();
   var scriptWithPostfix = appendPostfix(script);
+  var isTriggerMigration = type === 'trigger';
+  var dir = isTriggerMigration ? path.join(config.migrationsDir, 'trigger') : config.migrationsDir;
   var scriptsToRun;
-  if (script) {
-    if (checkExists(path.join(config.migrationsDir, scriptWithPostfix))) {
+  if (script || type === 'trigger') {
+    if (checkExists(path.join(dir, scriptWithPostfix))) {
       scriptsToRun = [scriptWithPostfix];
     } else {
       console.error('No script found, please double check the script name.');
       process.exit(1);
     }
   } else {
-    scriptsToRun = getAllScripts(config.migrationsDir, type);
+    scriptsToRun = getAllScripts(dir, type);
   }
 
   if (!scriptsToRun.length) {
@@ -38,28 +44,35 @@ function migrate(script, type) {
   scriptsToRun
     .reduce(function(cur, next) {
       return cur.then(function() {
-        return runOneScript(next, type);
+        return runOneScript(next, dir, type, params);
       });
     }, Promise.resolve())
     .then(function() {
-      changelog.close();
+      if (!isTriggerMigration) {
+        changelog.close();
+      }
       console.log('All migrations done.');
     });
 }
 
-function runOneScript(script, type) {
+function runOneScript(script, dir, type, params) {
   var config = getConfig();
-  var scriptPath = path.join(config.migrationsDir, script);
+  var scriptPath = path.join(dir, script);
   var migrate = require(scriptPath);
 
   console.log('Running migration: ' + script + '...');
   // connect db
   migrate.connect(dbConnect);
   return new Promise(function(resolve, reject) {
-    migrate[type](dbConnect.getAllConnections(), function() {
-      recordChange(script, type, config.migrationsDir);
+    var args = [dbConnect.getAllConnections()];
+    if (type === 'trigger') {
+      args.push(params);
+    }
+    args.push(function() {
+      recordChange(script, type, dir);
       dbConnect.endAll().then(resolve);
     });
+    migrate[type].apply(undefined, args);
   });
 }
 

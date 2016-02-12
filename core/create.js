@@ -1,33 +1,17 @@
 var fs = require('fs');
 var path = require('path');
 var mkdirpSync = require('mkdirp').sync;
-var moment = require('moment');
 
 var getConfig = require('../config').getConfig;
-var DB_SCRIPT_PLACEHOLDER = '/*DB_CONNECT_PLACEHOLDER*/';
-var TEMPLATES_PATH = path.join(__dirname, '../templates');
-var MIGRATE_TEMPLATE_PATH = path.join(TEMPLATES_PATH, 'migrate');
+var utils = require('../libs/utils');
 
-module.exports = function(migrationName) {
+module.exports = function(migrationName, templatePath, folder) {
   var config = getConfig();
-  createFile(generateFilename(migrationName), config.migrationsDir, generateScript(config.dbInUse));
+  var filename = utils.generateFilename(migrationName);
+  utils.createFile(
+    filename,
+    path.join(config.migrationsDir, folder || ''), // file dir
+    utils.generateDbScript(config.dbInUse, templatePath) // data
+  );
+  console.log('Migration script ' + filename + ' created!');
 };
-
-function createFile(name, dir, script) {
-  var writeDest = path.join(dir, name);
-  mkdirpSync(dir);
-  fs.writeFileSync(writeDest, script);
-  console.log('Migration script ' + name + ' created!');
-}
-
-function generateFilename(name) {
-  return moment().format('YYYYMMDDHHmmss') + '_' +name + '.js';
-}
-
-function generateScript(dbNames) {
-  var scriptTemplate = fs.readFileSync(MIGRATE_TEMPLATE_PATH).toString();
-  var newScriptSnippets = dbNames.map(function(dbName) {
-    return '  dbConnect.connect("' + dbName + '");';
-  }).join('\n')
-  return scriptTemplate.replace(DB_SCRIPT_PLACEHOLDER, newScriptSnippets);
-}

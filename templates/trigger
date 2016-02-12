@@ -1,0 +1,13 @@
+/**
+ * Connect to database
+ */
+exports.connect = function(dbConnect) {
+/*DB_CONNECT_PLACEHOLDER*/
+};
+
+/**
+ * Add your migrations triggering code here
+ */
+exports.trigger = function(db, params, callback) {
+  callback();
+};

@@ -6,6 +6,7 @@ var migratorCore = require('../core');
 var configure = require('../config').configure;
 var defaultConfig = require('../config').defaultConfig;
 var changelog = require('../libs/changelog');
+var CONSTANT = require('../constant');
 
 var cwd = process.cwd();
 var argv = minimist(process.argv.slice(2));
@@ -21,11 +22,11 @@ if (argv.help || argv.h) {
   '                              it will execute corresponding trigger script.\n' +
   'Options:\n' +
   '  -v, --version               Print version info.\n' +
-  '  -d, --migrations-dir        The directory containing your migration files.\n' +
+  '  -m, --migrations-dir        The directory containing your migration files.\n' +
   '                              [default: "' + defaultConfig.migrationsDir + '"]\n' +
-  '  -l, --migrations-changelog  Set the path of the migration table, which stores the\n' +
+  '  -d, --migrations-database   Set the path of the migration table, which stores the\n' +
   '                              migration history.\n' +
-  '                              [default: "' + defaultConfig.migrationsChangelog + '"]\n' +
+  '                              [default: "' + defaultConfig.migrationsDatabase + '"]\n' +
   '  -c, --db-config             Location of the database.json file.\n' +
   '                              [default: "' + defaultConfig.dbConfig + '"]\n' +
   '  -u, --db-in-use             Database might in use (mysql,mongo).\n' +
@@ -49,7 +50,7 @@ var param = _.snakeCase(argv._[1]);
 switch(command) {
   // create migration script
   case 'create':
-    migratorCore.create(param, argv.trigger);
+    migratorCore.create(param, CONSTANT.MIGRATE_TEMPLATE_PATH);
     break;
   // run migration up/down
   case 'up':
@@ -57,6 +58,10 @@ switch(command) {
     changelog.init(function() {
       migratorCore[command](param);
     });
+    break;
+  // create trigger script
+  case 'trigger':
+    migratorCore.create(param, CONSTANT.TRIGGER_TEMPLATE_PATH, CONSTANT.TRIGGER_FOLDER_NAME);
     break;
   // start daemon and listen for migration triggers
   case 'daemon':
@@ -66,11 +71,11 @@ switch(command) {
 
 function retrieveConfig(argv) {
   if (!argv['migrations-dir']) {
-    argv['migrations-dir'] = argv.d;
+    argv['migrations-dir'] = argv.m;
   }
 
-  if (!argv['migrations-changelog']) {
-    argv['migrations-changelog'] = argv.l;
+  if (!argv['migrations-database']) {
+    argv['migrations-database'] = argv.d;
   }
 
   if (!argv['db-config']) {
@@ -82,7 +87,7 @@ function retrieveConfig(argv) {
   }
 
   var config = {};
-  ['migrations-dir', 'migrations-changelog', 'db-config'].forEach(function(conf) {
+  ['migrations-dir', 'migrations-database', 'db-config'].forEach(function(conf) {
     if (!argv[conf]) {
       return;
     }
