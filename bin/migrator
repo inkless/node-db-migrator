@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 var migratorCore = require('../core');
-var changelog = require('../libs/changelog');
-var token = require('../libs/token');
 var CONSTANT = require('../constant');
 var config = require('../config');
 
@@ -50,20 +48,14 @@ switch(command) {
   // run migration up/down
   case 'up':
   case 'down':
-    changelog.init(function() {
-      migratorCore[command](param);
-    });
+    migratorCore[command](param);
     break;
   // create trigger script
   case 'trigger':
-    token.init(function() {
-      migratorCore.create(param, CONSTANT.TRIGGER_TEMPLATE_PATH, CONSTANT.TRIGGER_FOLDER_NAME, 'trigger');
-    });
+    migratorCore.create(param, CONSTANT.TRIGGER_TEMPLATE_PATH, command);
     break;
   // start daemon and listen for migration triggers
   case 'daemon':
-    token.init(function() {
-      migratorCore.daemon(param);
-    });
+    migratorCore.daemon(param);
     break;
 }

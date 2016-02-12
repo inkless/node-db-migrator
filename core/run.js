@@ -7,24 +7,33 @@ var dbConnect = require('../libs/db_connect');
 var checkExists = require('../libs/utils').checkExists;
 var changelog = require('../libs/changelog');
 
+var TRIGGER_FOLDER_NAME = require('../constant').TRIGGER_FOLDER_NAME;
+
 exports.up = function(script) {
-  migrate(script, 'up');
+  initChangelogAndMigrate(script, 'up');
 };
 
 exports.down = function(script) {
-  migrate(script, 'down');
+  initChangelogAndMigrate(script, 'down');
 };
 
 exports.trigger = function(script, params) {
-  migrate(script, 'trigger', params);
+  initChangelogAndMigrate(script, 'trigger', params);
 };
+
+function initChangelogAndMigrate() {
+  var args = arguments;
+  changelog.init(function() {
+    migrate.apply(null, args);
+  });
+}
 
 function migrate(script, type, params) {
   var scriptWithPostfix = appendPostfix(script);
   var isTriggerMigration = type === 'trigger';
-  var dir = isTriggerMigration ? path.join(config.migrationsDir, 'trigger') : config.migrationsDir;
+  var dir = isTriggerMigration ? path.join(config.migrationsDir, TRIGGER_FOLDER_NAME) : config.migrationsDir;
   var scriptsToRun;
-  if (script || type === 'trigger') {
+  if (script || isTriggerMigration) {
     if (checkExists(path.join(dir, scriptWithPostfix))) {
       scriptsToRun = [scriptWithPostfix];
     } else {
@@ -70,7 +79,7 @@ function runOneScript(script, dir, type, params) {
       recordChange(script, type, dir);
       dbConnect.endAll().then(resolve);
     });
-    migrate[type].apply(undefined, args);
+    migrate[type].apply(null, args);
   });
 }
 
