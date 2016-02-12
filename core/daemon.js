@@ -9,7 +9,8 @@ module.exports = function(command) {
 
   switch (command) {
     case 'start':
-      startHttpServer();
+      startDaemon(path.join(__dirname, 'server.js'));
+      startDaemon(path.join(__dirname, 'kafka.js'));
       break;
     case 'stop':
       forever.stop(args[2]);
@@ -25,8 +26,9 @@ module.exports = function(command) {
   }
 };
 
-function startHttpServer() {
-  forever.startDaemon(path.join(__dirname, 'server.js'), {
+function startDaemon(path) {
+  console.log('Starting daemon: ' + path);
+  forever.startDaemon(path, {
     max: 3,
     silent: false,
     args: args

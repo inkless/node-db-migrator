@@ -23,6 +23,7 @@
   "homepage": "https://github.com/inkless/node-db-migrator",
   "dependencies": {
     "forever": "^0.15.1",
+    "kafka-node": "github:inkless/kafka-node",
     "lodash": "^4.2.1",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
