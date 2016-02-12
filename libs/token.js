@@ -12,7 +12,9 @@ exports.init = function(callback) {
 };
 
 exports.createToken = function(name, callback) {
-  db.run('INSERT INTO ' + TOKEN_TABLE_NAME + ' VALUES(?, ?, datetime("now", "+1 month"))', [name, randomstring.generate()], callback);
+  var authToken = randomstring.generate();
+  db.run('INSERT INTO ' + TOKEN_TABLE_NAME + ' VALUES(?, ?, datetime("now", "+1 month"))', [name, authToken], callback);
+  console.log('To access script ' + name + ', please use token: ' + authToken);
 };
 
 exports.removeToken = function(name, callback) {
