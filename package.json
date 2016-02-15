@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/inkless/node-db-migrator",
   "dependencies": {
+    "dotenv": "^2.0.0",
     "forever": "^0.15.1",
     "kafka-node": "github:inkless/kafka-node",
     "lodash": "^4.2.1",

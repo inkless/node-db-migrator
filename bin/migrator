@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-var migratorCore = require('../core');
+require('dotenv').config();
 var CONSTANT = require('../constant');
 var config = require('../config');
+var migratorCore = require('../core');
 
 if (config.argv.help) {
   console.log(('Usage: migrator [command] [migration-name] [options]\n\n' +
