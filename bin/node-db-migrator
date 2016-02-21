@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-require('dotenv').config();
 var CONSTANT = require('../constant');
 var config = require('../config');
 var migratorCore = require('../core');

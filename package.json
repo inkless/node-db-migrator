@@ -2,7 +2,7 @@
   "name": "node-db-migrator",
   "version": "0.1.2",
   "description": "a node database migrator",
-  "bin": "./bin/migrator",
+  "bin": "./bin/node-db-migrator",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/inkless/node-db-migrator",
   "dependencies": {
-    "dotenv": "^2.0.0",
     "forever": "^0.15.1",
     "kafka-node": "github:inkless/kafka-node",
     "lodash": "^4.2.1",
