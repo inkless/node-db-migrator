@@ -16,11 +16,11 @@ Support spin up a daemon to handle delta data. Allows data migration for some sp
 ## Installation
 Install globally:
 ```
-npm install -g node-db-migration
+npm install -g node-db-migrator
 ```
 Install locally
 ```
-npm install node-db-migration
+npm install node-db-migrator
 ```
 Executable location:
 `node_modules/node-db-migration/bin/node-db-migrator`
