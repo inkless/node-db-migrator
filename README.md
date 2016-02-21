@@ -11,6 +11,7 @@ Support migration from one mysql database to another mysql database, or even to 
 Support javascript migration script besides SQL migration script. Provide extreme flexibility to data migration.
 
 - Daemon to handle delta data
+
 Support spin up a daemon to handle delta data. Allows data migration for some specific situation and parameters.
 
 ## Installation
@@ -38,7 +39,7 @@ Example:
     "driver": "mysql",
     "user": "root",
     "password": "yourpassword",
-		"database": "node_db_migration",
+    "database": "node_db_migration",
     "host": "localhost",
     "multipleStatements": true
   },
@@ -97,7 +98,7 @@ Triggering script is used to simplify the double write. Sometimes it's very hard
 When writing data, you called the API of triggering script and passed the parameters needed. The triggering script will do everything else.
 
 For example: You are modifying changing column `info` to `new_info` in `Customer` table.  In your code you can do:
-```
+```javascript
 // pseudo code
 triggerMigration(
   token /*your migration token*/,
