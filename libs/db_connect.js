@@ -1,45 +1,41 @@
-var mysql = require('mysql');
-var mongodb = require('mongodb');
 var _ = require('lodash');
 var Promise = require('promise');
 var config = require('../config');
+var mysqlDriver = require('../driver/mysql');
 
 var connections = {};
+var drivers = {
+  // TODO
+  // add mongo and postgres etc here
+  mysql: mysqlDriver
+};
 
 exports.connect = function(dbName) {
   var targetDb = getTargetDb(dbName);
   var driver = targetDb.driver;
-  _.omit(targetDb, 'driver');
+  var driverConfig = _.omit(_.clone(targetDb), 'driver');
 
-  var connection;
-  switch (driver) {
-    case 'mysql':
-      connection = connectMysql(targetDb);
-      break;
-    case 'mongodb':
-      // TODO
-      break;
+  if (!drivers[driver]) {
+    throw new Error('No driver found for ' + driver);
   }
 
-  var ori = _.size(connections);
+  var connection = drivers[driver].connect(driverConfig);
   connections[dbName] = connection;
   return connection;
+
 };
 
 var end = exports.end = function(dbName) {
   var targetDb = getTargetDb(dbName);
   return new Promise(function(resolve, reject) {
-    switch (targetDb.driver) {
-      case 'mysql':
-        connections[dbName].end(function(err) {
-          delete connections[dbName];
-          resolve();
-        });
-        break;
-      case 'mongodb':
-        // TODO
-        break;
+    if (!drivers[targetDb.driver]) {
+      throw new Error('No driver found for ' + driver);
     }
+
+    drivers[targetDb.driver].end(connections[dbName], function(err) {
+      delete connections[dbName];
+      resolve();
+    });
   });
 };
 
@@ -55,10 +51,4 @@ exports.getAllConnections = function() {
 
 function getTargetDb(dbName) {
   return config.databases[dbName];
-}
-
-function connectMysql(config) {
-  var connection = mysql.createConnection(config);
-  connection.connect();
-  return connection;
 }

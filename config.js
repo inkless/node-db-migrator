@@ -28,10 +28,6 @@ function configure(newConfig) {
   if (!config.dbInUse) {
     if (config.databases.defaultDb) {
       config.dbInUse = [config.databases.defaultDb];
-    } else if (_.size(config.databases) === 1) {
-      for (var dbName in config.databases) {
-        config.dbInUse = [dbName];
-      }
     } else {
       config.dbInUse = _.keys(config.databases);
     }

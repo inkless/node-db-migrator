@@ -8,17 +8,18 @@ var checkExists = require('../libs/utils').checkExists;
 var changelog = require('../libs/changelog');
 
 var TRIGGER_FOLDER_NAME = require('../constant').TRIGGER_FOLDER_NAME;
+var MIGRATE_TYPE = require('../constant').MIGRATE_TYPE;
 
 exports.up = function(script) {
-  initChangelogAndMigrate(script, 'up');
+  initChangelogAndMigrate(script, MIGRATE_TYPE.UP);
 };
 
 exports.down = function(script) {
-  initChangelogAndMigrate(script, 'down');
+  initChangelogAndMigrate(script, MIGRATE_TYPE.DOWN);
 };
 
 exports.trigger = function(script, params) {
-  initChangelogAndMigrate(script, 'trigger', params);
+  initChangelogAndMigrate(script, MIGRATE_TYPE.TRIGGER, params);
 };
 
 function initChangelogAndMigrate() {
@@ -30,7 +31,7 @@ function initChangelogAndMigrate() {
 
 function migrate(script, type, params) {
   var scriptWithPostfix = appendPostfix(script);
-  var isTriggerMigration = type === 'trigger';
+  var isTriggerMigration = type === MIGRATE_TYPE.TRIGGER;
   var dir = isTriggerMigration ? path.join(config.migrationsDir, TRIGGER_FOLDER_NAME) : config.migrationsDir;
   var scriptsToRun;
   if (script || isTriggerMigration) {
@@ -72,7 +73,7 @@ function runOneScript(script, dir, type, params) {
   migrate.connect(dbConnect);
   return new Promise(function(resolve, reject) {
     var args = [dbConnect.getAllConnections()];
-    if (type === 'trigger') {
+    if (type === MIGRATE_TYPE.TRIGGER) {
       args.push(params);
     }
     args.push(function() {
@@ -119,7 +120,7 @@ function getAllScripts(dir, type) {
 }
 
 function appendPostfix(name) {
-  if (name.substr(-3, 3) !== '.js') {
+  if (name.substr(-3) !== '.js') {
     name += '.js';
   }
   return name;

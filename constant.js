@@ -4,6 +4,11 @@ var cwd = process.cwd();
 module.exports = {
   DB_SCRIPT_PLACEHOLDER: '/*DB_CONNECT_PLACEHOLDER*/',
   TRIGGER_FOLDER_NAME: 'trigger',
+  MIGRATE_TYPE: {
+    UP: 'up',
+    DOWN: 'down',
+    TRIGGER: 'trigger'
+  },
   TEMPLATES_PATH: path.join(__dirname, 'templates'),
   MIGRATE_TEMPLATE_PATH: path.join(__dirname, 'templates/migrate'),
   TRIGGER_TEMPLATE_PATH: path.join(__dirname, 'templates/trigger'),

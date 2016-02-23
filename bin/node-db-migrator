@@ -38,24 +38,34 @@ if (config.argv.help) {
   return;
 }
 
+var operators = {
+  // create migration script
+  create: function(core, param) {
+    core.create(param, CONSTANT.MIGRATE_TEMPLATE_PATH);
+  },
+  // run migration up
+  up: function(core, param) {
+    core.up(param);
+  },
+  // revert migration
+  down: function(core, param) {
+    core.down(param);
+  },
+  // create trigger script
+  trigger: function(core, param) {
+    core.create(param, CONSTANT.TRIGGER_TEMPLATE_PATH, CONSTANT.MIGRATE_TYPE.TRIGGER);
+  },
+  // start daemon and listen for migration triggers
+  daemon: function(core, param) {
+    core.daemon(param);
+  }
+};
+
 var command = config.argv.command;
 var param = config.argv.param;
-switch(command) {
-  // create migration script
-  case 'create':
-    migratorCore.create(param, CONSTANT.MIGRATE_TEMPLATE_PATH);
-    break;
-  // run migration up/down
-  case 'up':
-  case 'down':
-    migratorCore[command](param);
-    break;
-  // create trigger script
-  case 'trigger':
-    migratorCore.create(param, CONSTANT.TRIGGER_TEMPLATE_PATH, command);
-    break;
-  // start daemon and listen for migration triggers
-  case 'daemon':
-    migratorCore.daemon(param);
-    break;
+var operator = operators[command];
+if (operator) {
+  operator(migratorCore, param);
+} else {
+  console.error('Command not found...');
 }

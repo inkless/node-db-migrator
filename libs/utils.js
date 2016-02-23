@@ -1,7 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var mkdirpSync = require('mkdirp').sync;
-var moment = require('moment');
+var _ = require('lodash');
 
 var DB_SCRIPT_PLACEHOLDER = require('../constant').DB_SCRIPT_PLACEHOLDER;
 
@@ -30,5 +30,17 @@ exports.generateDbScript = function(dbNames, templatePath) {
 
 exports.generateFilename = function(name, postfix) {
   postfix = postfix || '.js';
-  return moment().format('YYYYMMDDHHmmss') + '_' +name + postfix;
+  return getCurrentTimeString() + '_' +name + postfix;
 };
+
+function getCurrentTimeString() {
+  var d = new Date();
+  return [
+    d.getFullYear(),
+    _.padStart(d.getMonth() + 1, 2, '0'),
+    _.padStart(d.getDate(), 2, '0'),
+    _.padStart(d.getHours(), 2, '0'),
+    _.padStart(d.getMinutes(), 2, '0'),
+    _.padStart(d.getSeconds(), 2, '0')
+  ].join('');
+}
