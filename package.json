@@ -1,6 +1,6 @@
 {
   "name": "node-db-migrator",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "a node database migrator",
   "bin": "./bin/node-db-migrator",
   "scripts": {
