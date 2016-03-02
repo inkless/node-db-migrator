@@ -56,7 +56,7 @@ function migrate(script, type, params) {
         return runOneScript(next, dir, type, params);
       });
     }, Promise.resolve())
-    .then(function() {
+    .done(function() {
       if (!isTriggerMigration) {
         changelog.close();
       }
@@ -98,7 +98,7 @@ function recordChange(script, type, migrationsDir) {
 
 function getAllScripts(dir, type) {
   var files = fs.readdirSync(dir).filter(function(name) {
-    return name.substr(-3, 3) === '.js';
+    return name.substr(-3) === '.js';
   });
   var allLogs = changelog.getAllLogsFromCache().map(function(log) {
     return log.name;
@@ -108,11 +108,11 @@ function getAllScripts(dir, type) {
     return files.sort(function(a, b) {
       return a.split('_')[0] > b.split('_')[0];
     }).filter(function(file) {
-      return !~allLogs.indexOf(_.trimEnd(file, '.js'));
+      return allLogs.indexOf(_.trimEnd(file, '.js')) === -1;
     });
   } else {
     return allLogs.filter(function(logName) {
-      return ~files.indexOf(logName + '.js');
+      return files.indexOf(logName + '.js') !== -1;
     }).sort(function(a, b) {
       return a.split('_')[0] < b.split('_')[0];
     });

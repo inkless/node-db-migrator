@@ -38,7 +38,7 @@ if (config.argv.help) {
   return;
 }
 
-var operators = {
+var operations = {
   // create migration script
   create: function(core, param) {
     core.create(param, CONSTANT.MIGRATE_TEMPLATE_PATH);
@@ -63,9 +63,9 @@ var operators = {
 
 var command = config.argv.command;
 var param = config.argv.param;
-var operator = operators[command];
-if (operator) {
-  operator(migratorCore, param);
+var operation = operations[command];
+if (operation) {
+  operation(migratorCore, param);
 } else {
   console.error('Command not found...');
 }

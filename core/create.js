@@ -25,10 +25,10 @@ module.exports = function(migrationName, templatePath, type) {
 };
 
 function create(filename, templatePath, isTrigger) {
-  var dir = config.migrationsDir;
-  if (isTrigger) {
-    dir = path.join(config.migrationsDir, TRIGGER_FOLDER_NAME);
-  }
+  var dir = isTrigger ?
+    path.join(config.migrationsDir, TRIGGER_FOLDER_NAME) :
+    config.migrationsDir;
+
   utils.createFile(
     filename, dir,
     utils.generateDbScript(config.dbInUse, templatePath) // data

@@ -3,11 +3,7 @@ var forever = require('forever');
 var args = process.argv.slice(2);
 
 module.exports = function(command) {
-  if (!command) {
-    command = 'start';
-  }
-
-  switch (command) {
+  switch (command || 'start') {
     case 'start':
       startDaemon(path.join(__dirname, 'server.js'));
       startDaemon(path.join(__dirname, 'kafka.js'));
