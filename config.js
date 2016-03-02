@@ -21,7 +21,7 @@ function configure(newConfig) {
   _.extend(config, newConfig);
   if (!checkExists(config.dbConfig)) {
     // if checking version or help
-    if (arg.version || argv.help) {
+    if (argv.version || argv.help) {
       config.dbInUse = 'TBD';
       return;
     }
